@@ -19,6 +19,9 @@
 namespace Core.Components.Tabs;
 
 use Runtime.RuntimeUtils;
+use Core.UI.Annotations.Event;
+use Core.UI.Events.MouseEvent.MouseClickEvent;
+use Core.UI.Events.MouseEvent.MouseContextMenuEvent;
 use Core.UI.Render.CoreView;
 use Core.Components.Tabs.TabsAssets;
 use Core.Components.Tabs.TabsManager;
@@ -26,14 +29,7 @@ use Core.Components.Tabs.TabsModel;
 
 
 struct Tabs extends CoreView
-{
-	
-	/**
-	 * Returns module name
-	 */
-	lambda string moduleName() => "Core.Components.Tabs";
-	
-	
+{	
 	
 	/**
 	 * Component css
@@ -94,13 +90,13 @@ struct Tabs extends CoreView
 			return 
 				<div @class='tabs_header_wrap tabs_header_wrap_scroll' @key="header">
 					
-							{ 
-								ui.children != null ? 
-									ui.children.map( 
-										lambda UIStruct (UIStruct item) use (model) => 
-											static::renderTab(item, model.active, model.default_tab) 
-									) : ""
-							}
+					{ 
+						ui.children != null ? 
+							ui.children.map( 
+								lambda UIStruct (UIStruct item) use (model) => 
+									static::renderTab(item, model.active, model.default_tab) 
+							) : ""
+					}
 						
 				</div>
 			;
@@ -162,7 +158,11 @@ struct Tabs extends CoreView
 			"kind": "element",
 			"name": "div",
 			"key": key,
-			"controller": "tab_header",
+			"annotations": 
+			[
+				new Event{ "event": classof MouseClickEvent, "method_name": "onTaskHeaderClick" },
+				new Event{ "event": classof MouseContextMenuEvent, "method_name": "onTaskHeaderContext" },
+			],
 			"props": {
 				"@class": "tab_header_item",
 				"@tag": tag,

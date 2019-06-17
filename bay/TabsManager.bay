@@ -32,19 +32,14 @@ class TabsManager extends CoreManager
 	public TabsModel model;
 	
 	
-	@Event{ "event": classof MouseClickEvent, "method_name": "onTaskHeaderClick" }
-	@Event{ "event": classof MouseContextMenuEvent, "method_name": "onTaskHeaderContext" }
-	public assignable UIController tab_header = new UIController();
-	
-	
 	/**
 	 * Event click
 	 */
-	public void onTaskHeaderClick(MouseClickEvent event)
+	public void onTaskHeaderClick(UIEvent<MouseClickEvent> e)
 	{
 		/* Set new value */
-		string key = event.ui.props.get("data-tab-key");
-		mixed tag = event.ui.props.get("@tag", null);
+		string key = e.event.ui.props.get("data-tab-key");
+		mixed tag = e.event.ui.props.get("@tag", null);
 		this.updateModel({
 			"active": key,
 			"active_tag": tag,
@@ -53,9 +48,9 @@ class TabsManager extends CoreManager
 	
 	
 	
-	public void onTaskHeaderContext(MouseContextMenuEvent event)
+	public void onTaskHeaderContext(UIEvent<CoreEvent> e)
 	{
-		this.signalOut(event);
+		this.signalOut(e.event);
 	}
 	
 	
