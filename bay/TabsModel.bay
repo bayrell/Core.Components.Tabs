@@ -23,9 +23,9 @@ use Runtime.CoreStruct;
 
 struct TabsModel extends CoreStruct
 {
-	
 	public string active = "";
 	public string default_tab = "";
 	public mixed active_tag = null;
 	public bool scroll = false;
+	public int left = 0;
 }

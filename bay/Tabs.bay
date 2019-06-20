@@ -22,6 +22,7 @@ use Runtime.RuntimeUtils;
 use Core.UI.Annotations.Event;
 use Core.UI.Events.MouseEvent.MouseClickEvent;
 use Core.UI.Events.MouseEvent.MouseContextMenuEvent;
+use Core.UI.Events.MouseEvent.MouseWheelEvent;
 use Core.UI.Render.CoreView;
 use Core.Components.Tabs.TabsAssets;
 use Core.Components.Tabs.TabsManager;
@@ -37,11 +38,15 @@ struct Tabs extends CoreView
 	lambda string css(Dict<string> vars) => 
 		@css{
 			%tabs{
+				position: relative;
 			}
-			%tabs_header_wrap_scroll{
+			%tabs_header_wrap{
 				overflow: hidden;
 				white-space: nowrap;
 				-webkit-overflow-scrolling: touch;
+			}
+			%tabs_header{
+				position: relative;
 			}
 			%tab_header_item{
 				display: inline-block;
@@ -56,10 +61,10 @@ struct Tabs extends CoreView
 			%tab_header_item.active{
 				background-color: yellow;
 			}
-			%tabs_content{
+			%tabs_content_item{
 				display: none;
 			}
-			%tabs_content.active{
+			%tabs_content_item.active{
 				display: block;
 			}
 		}
@@ -85,25 +90,19 @@ struct Tabs extends CoreView
 	 */
 	lambda Template renderHeader(TabsModel model, UIStruct ui)
 	{
-		if (model.scroll)
-		{
-			return 
-				<div @class='tabs_header_wrap tabs_header_wrap_scroll' @key="header">
-					
-					{ 
-						ui.children != null ? 
-							ui.children.map( 
-								lambda UIStruct (UIStruct item) use (model) => 
-									static::renderTab(item, model.active, model.default_tab) 
-							) : ""
-					}
-						
-				</div>
-			;
-		}
-		
 		return 
-			<div @class='tabs_header_wrap' @key="header">
+			<div @class='tabs_header_wrap' @key="header"
+				@annotations=[
+					new Event
+					{
+						"event": classof MouseWheelEvent,
+						"method_name": "onWheelTabs",
+						"preventDefault": true,
+						"animaton": true,
+					},
+				]
+			>
+				<div @class='tabs_header' @ref="header" style={ "left: "~model.left~"px" }>
 				{ 
 					ui.children != null ? 
 						ui.children.map( 
@@ -111,6 +110,7 @@ struct Tabs extends CoreView
 								static::renderTab(item, model.active, model.default_tab) 
 						) : ""
 				}
+				</div>
 			</div>
 		;
 	}
@@ -194,7 +194,7 @@ struct Tabs extends CoreView
 			"name": "div",
 			"key": key,
 			"props": {
-				"@class": "tabs_content",
+				"@class": "tabs_content_item",
 				"class": class_name,
 				"data-tab-key": key,
 			},

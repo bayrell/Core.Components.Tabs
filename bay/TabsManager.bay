@@ -18,6 +18,7 @@
  
 namespace Core.Components.Tabs;
 
+use Runtime.Reference;
 use Core.UI.UIController;
 use Core.UI.Annotations.Event;
 use Core.UI.Events.MouseEvent.MouseClickEvent;
@@ -30,6 +31,7 @@ class TabsManager extends CoreManager
 {
 	
 	public TabsModel model;
+	public Reference header = new Reference();
 	
 	
 	/**
@@ -51,6 +53,24 @@ class TabsManager extends CoreManager
 	public void onTaskHeaderContext(UIEvent<CoreEvent> e)
 	{
 		this.signalOut(e.event);
+	}
+	
+	
+	
+	/**
+	 * Wheel Event
+	 */
+	public void onWheelTabs(UIEvent<MouseWheelEvent> e)
+	{
+		var left = this.model.left + (e.event.wheelDelta / 10);
+		var w = this.header.ref.clientWidth - this.header.ref.scrollWidth;
+		if (left > 0) left = 0;
+		if (left < w) left = w;
+		/*this.header.ref.style.left = this.left ~ "px";*/
+		
+		this.updateModel({
+			"left": left,
+		});
 	}
 	
 	
