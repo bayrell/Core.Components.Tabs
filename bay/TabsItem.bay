@@ -18,9 +18,9 @@
  
 namespace Core.Components.Tabs;
 
-use Core.UI.Render.CoreView;
+use Core.UI.Component;
 
 
-struct TabsItem extends CoreView
+class TabsItem extends Component
 {
 }

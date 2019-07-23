@@ -9,7 +9,7 @@
  *
  *      https://www.apache.org/licenses/LICENSE-2.0
  *
- *  Unless required by applicable law or agreed to in writing, software
+ *  Unless reqvdomred by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
  *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *  See the License for the specific language governing permissions and
@@ -18,19 +18,35 @@
  
 namespace Core.Components.Tabs;
 
+use Runtime.Reference;
 use Runtime.RuntimeUtils;
-use Core.UI.Annotations.Event;
+use Core.Annotations.Event;
+use Core.Annotations.EventAsync;
+use Core.Components.Tabs.TabsModel;
+use Core.UI.Events.MountEvent;
 use Core.UI.Events.MouseEvent.MouseClickEvent;
 use Core.UI.Events.MouseEvent.MouseContextMenuEvent;
 use Core.UI.Events.MouseEvent.MouseWheelEvent;
-use Core.UI.Render.CoreView;
-use Core.Components.Tabs.TabsAssets;
-use Core.Components.Tabs.TabsManager;
-use Core.Components.Tabs.TabsModel;
+use Core.UI.Component;
+use Core.UI.PocketModel;
 
 
-struct Tabs extends CoreView
-{	
+class Tabs extends Component
+{
+	
+	public TabsModel model;
+	public mixed tabs = null;
+	public mixed header_wrap = null;
+	public mixed header = null;
+	
+	
+	
+	/**
+	 * Returns model name
+	 */
+	lambda string modelName() => classof TabsModel;
+	
+	
 	
 	/**
 	 * Component css
@@ -75,11 +91,21 @@ struct Tabs extends CoreView
 	/**
 	 * Component render
 	 */
-	lambda Template render(TabsModel model, UIStruct ui) =>
+	lambda Template render(TabsModel model, UIStruct vdom, PocketModel pocket) =>
 	
-		<div @class='tabs' @key="div" data-active={ model.active != "" ? model.active : model.default_tab }>
-			{ static::renderHeader(model, ui) }
-			{ static::renderBottom(model, ui) }
+		<div @class='tabs' @key="div" @ref="tabs" 
+			data-active={ model.active != "" ? model.active : model.default_tab }
+			@annotations=[
+				new EventAsync
+				{
+					"event": classof MountEvent,
+					"method_name": "onMountTabs",
+					"animation": true,
+				}
+			]
+		>
+			{ static::renderHeader(model, vdom) }
+			{ static::renderBottom(model, vdom) }
 		</div>
 	;
 	
@@ -88,10 +114,10 @@ struct Tabs extends CoreView
 	/**
 	 * Header render
 	 */
-	lambda Template renderHeader(TabsModel model, UIStruct ui)
+	lambda Template renderHeader(TabsModel model, UIStruct vdom)
 	{
 		return 
-			<div @class='tabs_header_wrap' @key="header"
+			<div @class='tabs_header_wrap' @key="header_wrap" @ref="header_wrap"
 				@annotations=[
 					new Event
 					{
@@ -102,10 +128,11 @@ struct Tabs extends CoreView
 					},
 				]
 			>
-				<div @class='tabs_header' @ref="header" style={ "left: "~model.left~"px" }>
+				<div @class='tabs_header' @ref="header" style={ "left: "~model.left~"px" } 
+					@watch=[ model.left, vdom.children ] >
 				{ 
-					ui.children != null ? 
-						ui.children.map( 
+					vdom.children != null ? 
+						vdom.children.map( 
 							lambda UIStruct (UIStruct item) use (model) => 
 								static::renderTab(item, model.active, model.default_tab) 
 						) : ""
@@ -120,12 +147,12 @@ struct Tabs extends CoreView
 	/**
 	 * Header render
 	 */
-	lambda Template renderBottom(TabsModel model, UIStruct ui) =>
+	lambda Template renderBottom(TabsModel model, UIStruct vdom) =>
 	
 		<div @class='tabs_content_wrap' @key="content">
 			{
-				ui.children != null ? 
-					ui.children.map( 
+				vdom.children != null ? 
+					vdom.children.map( 
 						lambda UIStruct (UIStruct item) use (model) => 
 							static::renderContent(item, model.active, model.default_tab) 
 					) : "" 
@@ -203,6 +230,70 @@ struct Tabs extends CoreView
 	}
 	
 	
+	
+	
+	/* ---------------------------------- Events ----------------------------------- */
+	
+	
+	/**
+	 * Main click
+	 */
+	public async void onMountTabs(UIEvent<MountEvent> e)
+	{
+		this.header_wrap.style.width = this.tabs.offsetWidth ~ "px";
+	}
+	
+	
+	
+	/**
+	 * Returns true if component should updated
+	 * @return bool
+	 */
+	public bool shouldUpdate()
+	{
+		return true;
+	}
+	
+	
+	
+	/**
+	 * Event click
+	 */
+	public void onTaskHeaderClick(UIEvent<MouseClickEvent> e)
+	{
+		/* Set new value */
+		string key = e.vdom.props.get("data-tab-key");
+		mixed tag = e.vdom.props.get("@tag", null);
+		this.updateModel({
+			"active": key,
+			"active_tag": tag,
+		});
+	}
+	
+	
+	
+	public void onTaskHeaderContext(UIEvent<CoreEvent> e)
+	{
+		this.signalOut(e.event);
+	}
+	
+	
+	
+	/**
+	 * Wheel Event
+	 */
+	public void onWheelTabs(UIEvent<MouseWheelEvent> e)
+	{
+		var left = this.model.left + (e.event.wheelDelta / 5);
+		var w = this.header.clientWidth - this.header.scrollWidth;
+		if (left > 0) left = 0;
+		if (left < w) left = w;
+		/*this.header.style.left = this.left ~ "px";*/
+		
+		this.updateModel({
+			"left": left,
+		});
+	}
 	
 	
 }

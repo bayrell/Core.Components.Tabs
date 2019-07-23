@@ -20,13 +20,12 @@ namespace Core.Components.Tabs;
 
 use Runtime.Exceptions.RuntimeException;
 use Runtime.Interfaces.AssetsInterface;
-use Runtime.Interfaces.ComponentInterface;
 use Runtime.Interfaces.ContextInterface;
 use Runtime.Interfaces.ModuleDescriptionInterface;
 use Core.UI.Render.RenderContainer;
 
 
-class ModuleDescription implements ModuleDescriptionInterface, ComponentInterface
+class ModuleDescription implements ModuleDescriptionInterface, AssetsInterface
 {
 
 	
@@ -65,7 +64,6 @@ class ModuleDescription implements ModuleDescriptionInterface, ComponentInterfac
 	[
 		"Core.Components.Tabs.Tabs",
 		"Core.Components.Tabs.TabsItem",
-		"Core.Components.Tabs.TabsManager",
 		"Core.Components.Tabs.TabsModel",
 		"Core.Components.Tabs.ModuleDescription",
 	];
@@ -76,27 +74,6 @@ class ModuleDescription implements ModuleDescriptionInterface, ComponentInterfac
 	 * Returns enities
 	 */
 	lambda Collection<Dict> entities() => null;
-	
-	
-	
-	/**
-	 * Returns view name
-	 */
-	lambda string componentViewName()  => "Core.Components.Tabs.Tabs";
-	
-	
-	
-	/**
-	 * Returns manager name
-	 */
-	lambda string componentManagerName() => "Core.Components.Tabs.TabsManager";
-	
-	
-	
-	/**
-	 * Returns model name
-	 */
-	lambda string componentModelName()  => "Core.Components.Tabs.TabsModel";
 	
 	
 	
